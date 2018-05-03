@@ -1,0 +1,7 @@
+Django
+djangorestframework
+requests
+psycopg2-binary
+coreapi
+coverage
+mock
