@@ -33,7 +33,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-AUTH_USER_MODEL = 'userserver.Users'
+# AUTH_USER_MODEL = 'userserver.Users'
 # Application definition
 
 INSTALLED_APPS = [
