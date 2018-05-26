@@ -17,3 +17,5 @@ requests==2.18.4
 six==1.11.0
 uritemplate==3.0.0
 urllib3==1.22
+psycopg2-binary
+django-reset-migrations
