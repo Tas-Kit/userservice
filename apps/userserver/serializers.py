@@ -1,13 +1,24 @@
 from rest_framework import routers, serializers
 # from django.contrib.auth.models import User
 from .models import Users
+from django.contrib.auth.models import User
 
 
-class UserSerializers(serializers.ModelSerializer):
+
+
+class UsersSerializers(serializers.ModelSerializer):
+    # user = UserSerializers(many=False)
     class Meta:
         model = Users
-        fields = ('username','password','first_name','last_name',
-                    'email','is_staff','is_active','is_superuser',
-                    'birthday','gender','phone','address')
+        fields = '__all__'
+
+class UserSerializers(serializers.ModelSerializer):
+    extra = UsersSerializers(many=False)
+    class Meta:
+        model = User
+        fields = '__all__'
+
+
+
 
 

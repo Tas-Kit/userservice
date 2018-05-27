@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import mixins
 from rest_framework import viewsets
 from .serializers import UserSerializers
-from .models import Users
+from .models import Users,User
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import AllowAny
 from rest_framework import filters
@@ -27,12 +27,12 @@ class UserViewSet(
                   viewsets.GenericViewSet):
 
     serializer_class = UserSerializers
-    queryset = Users.objects.all()
+    queryset = User.objects.all()
     # authentication_classes = ()
     pagination_class = UserPage
 
     filter_backends = (DjangoFilterBackend,filters.SearchFilter)
     
-    filter_fields = ('username','first_name','last_name','is_active', 'is_staff','is_superuser','email','phone','address','birthday')
-    search_fields = ('username','first_name','last_name','email','phone','address')
+    filter_fields = ('username','first_name','last_name','is_active', 'is_staff','is_superuser','email')
+    search_fields = ('username','first_name','last_name','email')
 

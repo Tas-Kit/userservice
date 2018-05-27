@@ -21,23 +21,21 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'config'))
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '@4&6g7#kxr_kkn4!3g2vh3lop%toe%#q+u=wb@bfbv7-9zzm_-'
+SECRET_KEY = os.getenv('SECRET_KEY', '@4&6g7#kxr_kkn4!3g2vh3lop%toe%#q+u=wb@bfbv7-9zzm_-')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
-AUTH_USER_MODEL = 'userserver.Users'
+# AUTH_USER_MODEL = 'userserver.Users'
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -46,6 +44,8 @@ INSTALLED_APPS = [
     'userserver',
     'rest_framework',
     'django_filters',
+    'reset_migrations',
+    # 'django.contrib.admin',
 ]
 
 MIDDLEWARE = [
@@ -81,13 +81,22 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+# DATABASES = {
+# 'default': {
+#     'ENGINE': 'django.db.backends.postgresql',
+#     'NAME': 'postgres',
+#     'HOST': os.getenv('USER_DB_HOST', 'userdb'),
+#     'USER': os.getenv('POSTGRES_USER', 'postgres'),
+#     'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
+#     'PORT': 5432,
+# }
+# }
 
 
 # Password validation

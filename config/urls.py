@@ -22,11 +22,12 @@ from rest_framework.documentation import include_docs_urls
 router = routers.DefaultRouter()
 router.register(r'user', UserViewSet)
 
-
+# v1 第一个版本
+prefix_path = 'api/v1'
 
 urlpatterns = [
-    url(r'^api/v1/', include(router.urls)),
-    url(r'^admin/', admin.site.urls),
-    url(r'^docs/', include_docs_urls(title="用户服务管理")),
-    url(r'^api-auth/', include('rest_framework.urls')),
+    url(r'^%s/'%prefix_path, include(router.urls)),
+    url(r'^%s/user_docs/'%prefix_path, include_docs_urls(title="用户服务管理")),
+    url(r'^%s/user_admin/'%prefix_path, admin.site.urls),
+    # url(r'^%s/user/api-auth/'%prefix_path, include('rest_framework.urls')),
 ]
