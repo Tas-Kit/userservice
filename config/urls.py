@@ -1,32 +1,30 @@
 """config URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/1.11/topics/http/urls/
+    https://docs.djangoproject.com/en/2.0/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
+    2. Add a URL to urlpatterns:  path('', views.home, name='home')
 Class-based views
     1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  url(r'^$', Home.as_view(), name='home')
+    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
 Including another URLconf
-    1. Import the include() function: from django.conf.urls import url, include
-    2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.conf.urls import url,include
 from django.contrib import admin
-from rest_framework import routers, serializers, viewsets
-from userserver.views import UserViewSet
+from django.urls import path,include
 from rest_framework.documentation import include_docs_urls
-
-router = routers.DefaultRouter()
-router.register(r'user', UserViewSet)
-
-
+from rest_framework.routers import DefaultRouter
+from users.views import UserSignUp,UserLogin,UserInfo
 
 urlpatterns = [
-    url(r'^api/v1/', include(router.urls)),
-    url(r'^admin/', admin.site.urls),
-    url(r'^docs/', include_docs_urls(title="用户服务管理")),
-    url(r'^api-auth/', include('rest_framework.urls')),
+    # path('api/v1/', include(router.urls)),
+    path('api/v1/singup/',UserSignUp.as_view()),
+    path('api/v1/login/',UserLogin.as_view()),
+    path('api/v1/userinfo/',UserInfo.as_view()),
+    path('admin/', admin.site.urls),
+    path('docs/', include_docs_urls(title="user")),
+
 ]
