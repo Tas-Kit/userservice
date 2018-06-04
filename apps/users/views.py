@@ -141,6 +141,8 @@ class UserLogin(APIView):
             re_dict["token"] = token
 
             response =  Response(re_dict)
+            user.last_login = timezone.now()
+            user.save()
 
             if settings.JWT_AUTH_COOKIE:
                 expiration = (datetime.utcnow() +
@@ -149,12 +151,10 @@ class UserLogin(APIView):
                                     token,
                                     expires=expiration,
                                     httponly=True)
-                user.last_login = timezone.now()
-                user.save()
+                
 
                 # user_logged_in.send(sender=Users, request=request, user=user)
                 return response
-
             else:
                 return response
 
