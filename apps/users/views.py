@@ -37,7 +37,22 @@ def get_token(username):
     return token
 
 User = get_user_model()
-# Create your views here.
+
+class CookieAuthentication(BaseAuthentication):
+    def authenticate(self, request):
+        # 根据uuid获取user
+
+        # cookie = request._request.META['HTTP_COOKIE']
+        # cookie_str = cookie.replace(' ', '')
+        # if 'uid' in cookie_str:
+            # uid = cookie_dict.replace('uid=', '')
+            # user = User.objects.get('id')
+
+        user = User.objects.get(id='fff560c300f744a8a557dd5d0f09a04e')#需要把硬编码替换下来
+        if not user:
+            return None
+        else:
+            return (user,None)
 
 
 class UserInfo(APIView):
@@ -45,7 +60,7 @@ class UserInfo(APIView):
     获取用户个人信息
     '''
     # permission_classes = (permissions.IsAuthenticated(),)
-    authentication_classes = ()
+    authentication_classes = (CookieAuthentication)
 
     def get_serializer(self, *args, **kwargs):
         """
