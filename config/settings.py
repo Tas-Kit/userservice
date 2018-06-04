@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/2.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
-
+import datetime
 import os
 import sys
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'django_filters',
     'corsheaders',
-    'users'
+    'userservice'
 ]
 
 MIDDLEWARE = [
@@ -57,7 +57,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
-AUTH_USER_MODEL = 'users.Users'
+AUTH_USER_MODEL = 'userservice.User'
 
 TEMPLATES = [
     {
@@ -127,10 +127,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-import datetime
+
 JWT_EXPIRATION_DELTA = datetime.timedelta(days=7)
 JWT_AUTH_COOKIE = 'token'
 
 AUTHENTICATION_BACKENDS = (
-    'users.views.CustomBackend',
+    'userservice.views.CustomBackend',
 )

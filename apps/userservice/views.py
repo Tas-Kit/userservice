@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import mixins
 from rest_framework import viewsets
-from .serializers import UserRegSerializer, UserDetailSerializer, UserLoginSerializer
+from .serializers import UserRegSerializer, UserDetailSerializer, UserLoginSerializer, UserUpdateSerializer
 from django.contrib.auth import get_user_model
 from rest_framework import permissions
 from rest_framework import status
@@ -14,7 +14,7 @@ from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib.auth.signals import user_logged_in
-from .models import Users
+User = get_user_model()
 
 
 class CustomBackend(ModelBackend):
@@ -25,6 +25,7 @@ class CustomBackend(ModelBackend):
     def authenticate(self, username=None, password=None, **kwargs):
         try:
             user = User.objects.get(Q(username=username) | Q(email=username))
+            print(user)
             if user.check_password(password):
                 return user
         except Exception as e:
@@ -36,46 +37,70 @@ def get_token(username):
     token = 'jwt 123abc'
     return token
 
-User = get_user_model()
 
 class CookieAuthentication(BaseAuthentication):
     def authenticate(self, request):
         # 根据uuid获取user
 
-        cookie = request._request.META['HTTP_COOKIE']
-        cookie_str = cookie.replace(' ', '')
-        if 'uid' in cookie_str:
-            uid = cookie_dict.replace('uid=', '')
-            user = User.objects.get(id=uid)
+        # cookie = request._request.META['HTTP_COOKIE']
+        # cookie_str = cookie.replace(' ', '')
+        # if 'uid' in cookie_str:
+        #     uid = cookie_dict.replace('uid=', '')
+        #     user = User.objects.get(id=uid)
 
-        #user = User.objects.get(id='fff560c300f744a8a557dd5d0f09a04e')#需要把硬编码替换下来
+        user = User.objects.get(id='8a2a4f240c9d40a3b930483c4f86a696')  # 需要把硬编码替换下来
         if not user:
             return None
         else:
-            return (user,None)
+            return (user, None)
 
 
 class UserInfo(APIView):
     '''
     获取用户个人信息
     '''
-    # permission_classes = (permissions.IsAuthenticated(),)
-    authentication_classes = (CookieAuthentication)
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (CookieAuthentication,)
 
     def get_serializer(self, *args, **kwargs):
         """
         Return the serializer instance that should be used for validating and
         deserializing input, and for serializing output.
         """
+        kwargs['context'] = self.get_serializer_context()
+        return UserUpdateSerializer(*args, **kwargs)
 
-        serializer_class = UserDetailSerializer
+    def get_serializer_context(self):
+        """
+        Extra context provided to the serializer class.
+        """
+        return {
+            'request': self.request,
+            'format': self.format_kwarg,
 
-        return serializer_class(*args, **kwargs)
+            'view': self
+        }
 
     def get(self, request, *arg, **kwargs):
         data = self.request.user
-        serializer = self.get_serializer(data)
+        serializer = UserDetailSerializer(data)
         return Response(serializer.data)
+
+    def post(self, request, *arg, **kwargs):
+        user = self.request.user
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            for name, value in serializer.data.items():
+                if value:
+                    if name == 'password':
+                        print('mimao change')
+                        user.set_password(value)
+                    else:
+                        setattr(user, name, value)
+            user.save()
+            return Response('SUCCESS')
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserSignUp(APIView):
@@ -94,7 +119,7 @@ class UserSignUp(APIView):
 
     def post(self, request, *arg, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data)
         else:
@@ -120,6 +145,6 @@ class UserLogin(APIView):
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
 
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             return Response('SUCCESS')
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

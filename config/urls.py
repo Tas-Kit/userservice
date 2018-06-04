@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.urls import path
 from rest_framework.documentation import include_docs_urls
-from users.views import UserSignUp, UserLogin, UserInfo
+from userservice.views import UserSignUp, UserLogin, UserInfo
 
 urlpatterns = [
     # path('api/v1/', include(router.urls)),
