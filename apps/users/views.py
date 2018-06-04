@@ -42,13 +42,13 @@ class CookieAuthentication(BaseAuthentication):
     def authenticate(self, request):
         # 根据uuid获取user
 
-        # cookie = request._request.META['HTTP_COOKIE']
-        # cookie_str = cookie.replace(' ', '')
-        # if 'uid' in cookie_str:
-            # uid = cookie_dict.replace('uid=', '')
-            # user = User.objects.get('id')
+        cookie = request._request.META['HTTP_COOKIE']
+        cookie_str = cookie.replace(' ', '')
+        if 'uid' in cookie_str:
+            uid = cookie_dict.replace('uid=', '')
+            user = User.objects.get(id=uid)
 
-        user = User.objects.get(id='fff560c300f744a8a557dd5d0f09a04e')#需要把硬编码替换下来
+        #user = User.objects.get(id='fff560c300f744a8a557dd5d0f09a04e')#需要把硬编码替换下来
         if not user:
             return None
         else:
