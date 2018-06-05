@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import mixins
 from rest_framework import viewsets
 from .serializers import (UserRegSerializer, UserDetailSerializer, UserLoginSerializer, UserUpdateSerializer,
@@ -10,15 +9,10 @@ from rest_framework import status
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
-
-from django.conf import settings
-from datetime import datetime
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.views import APIView
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
-from django.utils import timezone
-from django.contrib.auth.signals import user_logged_in
 from rest_framework.pagination import PageNumberPagination
 
 User = get_user_model()
@@ -26,7 +20,7 @@ User = get_user_model()
 
 class CustomBackend(ModelBackend):
     """
-    自定义用户验证
+    自定义登陆验证
     """
 
     def authenticate(self, username=None, password=None, **kwargs):

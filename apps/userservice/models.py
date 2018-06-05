@@ -1,9 +1,6 @@
 from django.db import models
 import uuid
-# Create your models here.
 from django.contrib.auth.models import AbstractUser
-
-# Create your models here.
 
 
 class User(AbstractUser):
@@ -24,6 +21,3 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-
-    # def save(self,**kwsg):
-    #     super().save()
