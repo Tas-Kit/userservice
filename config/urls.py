@@ -13,15 +13,24 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path
+from django.urls import path, include
 from rest_framework.documentation import include_docs_urls
-from userservice.views import UserSignUp, UserLogin, UserInfo
+from userservice.views import UserSignUp, UserLogin, UserInfo, UsersViewSet
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+router.register(r'', UsersViewSet, base_name='users')
+
+api_v1_userservice_url = [
+    # path('api/v1/', include(router.urls)),
+    path('signup/', UserSignUp.as_view()),
+    path('login/', UserLogin.as_view()),
+    path('userinfo/', UserInfo.as_view()),
+    path('users/', include(router.urls)),
+    path('user_docs/', include_docs_urls(title="user")),
+
+]
 
 urlpatterns = [
-    # path('api/v1/', include(router.urls)),
-    path('api/v1/singup/', UserSignUp.as_view()),
-    path('api/v1/login/', UserLogin.as_view()),
-    path('api/v1/userinfo/', UserInfo.as_view()),
-    path('api/v1/user_docs/', include_docs_urls(title="user")),
-
+    path('api/v1/userservice/', include(api_v1_userservice_url))
 ]

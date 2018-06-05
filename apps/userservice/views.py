@@ -1,11 +1,16 @@
 from django.shortcuts import render
 from rest_framework import mixins
 from rest_framework import viewsets
-from .serializers import UserRegSerializer, UserDetailSerializer, UserLoginSerializer, UserUpdateSerializer
+from .serializers import (UserRegSerializer, UserDetailSerializer, UserLoginSerializer, UserUpdateSerializer,
+                          UsersSerializers
+                          )
 from django.contrib.auth import get_user_model
 from rest_framework import permissions
 from rest_framework import status
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+
 from django.conf import settings
 from datetime import datetime
 from rest_framework.authentication import BaseAuthentication
@@ -14,6 +19,8 @@ from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib.auth.signals import user_logged_in
+from rest_framework.pagination import PageNumberPagination
+
 User = get_user_model()
 
 
@@ -77,7 +84,6 @@ class UserInfo(APIView):
         return {
             'request': self.request,
             'format': self.format_kwarg,
-
             'view': self
         }
 
@@ -148,3 +154,29 @@ class UserLogin(APIView):
         if serializer.is_valid(raise_exception=True):
             return Response('SUCCESS')
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UsersPage(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    page_query_param = "page"
+    max_page_size = 50
+
+
+class UsersViewSet(
+    # mixins.CreateModelMixin,
+    # mixins.UpdateModelMixin,
+    mixins.ListModelMixin,
+    # mixins.DestroyModelMixin,
+    mixins.RetrieveModelMixin,
+        viewsets.GenericViewSet):
+
+    serializer_class = UsersSerializers
+    queryset = User.objects.all()
+    # authentication_classes = ()
+    pagination_class = UsersPage
+
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+
+    filter_fields = ('id', 'username', 'phone', 'email')
+    search_fields = filter_fields

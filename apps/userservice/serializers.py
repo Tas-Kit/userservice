@@ -83,3 +83,10 @@ class UserLoginSerializer(serializers.Serializer):
             msg = _('Must include "{username_field}" and "password".')
             msg = msg.format(username_field=self.username_field)
             raise serializers.ValidationError(msg)
+
+
+class UsersSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'first_name', 'last_name',
+                  'email', 'birthday', 'gender', 'phone', 'address')
