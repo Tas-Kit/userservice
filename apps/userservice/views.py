@@ -213,7 +213,7 @@ class ResetPassword(APIView):
             t = get_template('email.html')
             html = t.render({'code': code})
 
-            state = send_mail(subject='重置密码',
+            send_mail(subject='重置密码',
                               from_email=settings.EMAIL_HOST_USER,
                               message='',
                               recipient_list=[email, ],

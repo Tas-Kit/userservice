@@ -138,6 +138,6 @@ AUTHENTICATION_BACKENDS = (
 EMAIL_HOST = 'smtp.qq.com'
 EMAIL_PORT = 465
 EMAIL_HOST_USER = 'lambdang@foxmail.com'
-EMAIL_HOST_PASSWORD = 'pnbcmydxfnggbibg'
+EMAIL_HOST_PASSWORD = 'xxx'
 EMAIL_USE_SSL = True
 EMAIL_USE_TLS = False
