@@ -1,9 +1,11 @@
-import re
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
+from rest_framework.validators import UniqueValidator
 from django.contrib.auth import authenticate
 from django.utils.translation import ugettext as _
+from datetime import datetime
+from datetime import timedelta
+from .models import VerifyCode
 
 
 User = get_user_model()
@@ -90,3 +92,46 @@ class UsersSerializers(serializers.ModelSerializer):
         model = User
         fields = ('id', 'username', 'first_name', 'last_name',
                   'email', 'birthday', 'gender', 'phone', 'address')
+
+
+class ResetPasswordSerializers(serializers.Serializer):
+    email = serializers.EmailField(label='邮箱', help_text='邮箱')
+
+    def validate_email(self, email):
+        '''
+        验证邮箱是否存在
+        '''
+        try:
+            User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("该邮箱不存在")
+        else:
+            return email
+
+
+class SetPasswordSerializers(serializers.Serializer):
+    code = serializers.CharField(label='编码', max_length=50)
+    password = serializers.CharField(help_text="密码", label="密码", write_only=True)
+
+    def validate_code(self, code):
+        code = VerifyCode.objects.filter(code=code).order_by("-add_time")
+        if code:
+            last_code = code[0]
+            ten_mintes_ago = datetime.now() - timedelta(hours=0, minutes=10, seconds=0)
+            if ten_mintes_ago > last_code.add_time:
+                raise serializers.ValidationError("重置密码链接过期,请重新申请")
+            self.context['email'] = last_code.email
+            return code
+        else:
+            raise serializers.ValidationError("未重置密码")
+
+    def validate(self, attrs):
+        email = self.context.get('email')
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError('用户不存在')
+        else:
+            user.set_password(attrs['password'])
+            VerifyCode.objects.filter(email=email).delete()
+            return attrs

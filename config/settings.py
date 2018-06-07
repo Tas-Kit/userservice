@@ -62,7 +62,7 @@ AUTH_USER_MODEL = 'userservice.User'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -119,7 +119,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -134,3 +134,10 @@ JWT_AUTH_COOKIE = 'token'
 AUTHENTICATION_BACKENDS = (
     'userservice.views.CustomBackend',
 )
+
+EMAIL_HOST = 'smtp.qq.com'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'lambdang@foxmail.com'
+EMAIL_HOST_PASSWORD = 'pnbcmydxfnggbibg'
+EMAIL_USE_SSL = True
+EMAIL_USE_TLS = False
