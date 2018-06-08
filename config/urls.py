@@ -17,6 +17,7 @@ from django.urls import path, include
 from rest_framework.documentation import include_docs_urls
 from userservice.views import UserSignUp, UserLogin, UserInfo, UsersViewSet, ResetPassword, SetPassword
 from rest_framework import routers
+from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
 
 router = routers.DefaultRouter()
 router.register(r'', UsersViewSet, base_name='users')
@@ -29,9 +30,9 @@ api_v1_userservice_url = [
     path('users/', include(router.urls)),
     path('reset_password/', ResetPassword.as_view()),
     path('set_password/', SetPassword.as_view()),
-
+    path('get_jwt/', obtain_jwt_token),
+    path('refresh_jwt/', refresh_jwt_token),
     path('user_docs/', include_docs_urls(title="user")),
-
 ]
 
 urlpatterns = [
