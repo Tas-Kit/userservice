@@ -63,7 +63,7 @@ AUTH_USER_MODEL = 'userservice.User'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -132,7 +132,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -140,10 +140,29 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+secrets_path = 'config/secrets/'
 
-JWT_EXPIRATION_DELTA = datetime.timedelta(days=7)
-JWT_AUTH_COOKIE = 'token'
+JWT_AUTH = {
+    'JWT_ALGORITHM': 'RS256',
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(minutes=30),
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+    'JWT_PRIVATE_KEY': open(secrets_path + 'jwtRS256.key').read(),
+    'JWT_PUBLIC_KEY': open(secrets_path + 'jwtRS256.key.pub').read()
+}
+
+PROTOCOL = os.getenv('PROTOCOL', 'https')
+HOST = os.getenv('HOST', 'sandbox.tas-kit.com')
+BASE_URL = '{0}://{1}'.format(PROTOCOL, HOST)
+WEBMAIN_URL = '{0}/web/main/'.format(BASE_URL)
 
 AUTHENTICATION_BACKENDS = (
     'userservice.views.CustomBackend',
 )
+
+EMAIL_HOST = 'smtp.qq.com'
+EMAIL_PORT = 465
+EMAIL_HOST_USER = 'lambdang@foxmail.com'
+EMAIL_HOST_PASSWORD = 'mima'
+EMAIL_USE_SSL = True
+EMAIL_USE_TLS = False

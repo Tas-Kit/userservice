@@ -19,3 +19,5 @@ uritemplate==3.0.0
 urllib3==1.22
 django-cors-headers==2.2.0
 psycopg2-binary
+djangorestframework-jwt
+cryptography
