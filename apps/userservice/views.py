@@ -63,7 +63,8 @@ class CookieAuthentication(BaseAuthentication):
 
 class UserInfo(APIView):
     '''
-    获取用户个人信息
+    list 获取用户个人信息
+    create 修改个人信息
     '''
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (CookieAuthentication,)
@@ -176,7 +177,7 @@ class UsersViewSet(
         mixins.RetrieveModelMixin,
         viewsets.GenericViewSet):
     '''
-    用户查询
+    非个人用户查询
     '''
 
     serializer_class = UsersSerializers
@@ -192,7 +193,7 @@ class UsersViewSet(
 
 class ResetPassword(APIView):
     '''
-    重置密码
+    重置密码 获取 code
     '''
 
     def get_serializer(self, *args, **kwargs):
@@ -226,7 +227,7 @@ class ResetPassword(APIView):
 
 class SetPassword(APIView):
     '''
-    设置密码
+    重置密码
     '''
 
     def get_serializer(self, *args, **kwargs):
