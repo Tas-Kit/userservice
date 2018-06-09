@@ -166,7 +166,6 @@ class UserLogin(APIView):
         if serializer.is_valid(raise_exception=True):
             response = Response('SUCCESS')
             response.set_cookie(api_settings.JWT_AUTH_COOKIE, get_token(request.user))
-            print('set jwt', response.cookies)
             return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
