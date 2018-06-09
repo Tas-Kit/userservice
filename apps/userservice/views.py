@@ -16,10 +16,14 @@ from django.db.models import Q
 from rest_framework.pagination import PageNumberPagination
 from .models import VerifyCode
 from django.core.mail import send_mail
+from django.shortcuts import redirect
 import uuid
 from django.template.loader import get_template
 from django.conf import settings
+from rest_framework_jwt.settings import api_settings
 
+jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 User = get_user_model()
 
 
@@ -31,35 +35,28 @@ class CustomBackend(ModelBackend):
     def authenticate(self, username=None, password=None, **kwargs):
         try:
             user = User.objects.get(Q(username=username) | Q(email=username))
-            print(user)
             if user.check_password(password):
                 return user
         except:
             return None
 
 
-def get_token(username):
+def get_token(user):
     # 需要获取token
-    token = 'jwt 123abc'
-    return token
+    payload = jwt_payload_handler(user)
+    return jwt_encode_handler(payload)
 
 
 class CookieAuthentication(BaseAuthentication):
+
     def authenticate(self, request):
-        # 根据uuid获取user
-
-        cookie = request._request.META.get('HTTP_COOKIE')
-        user = None
-        if cookie:
-            cookie_str = cookie.replace(' ', '')
-            if 'uid' in cookie_str:
-                uid = cookie_str.replace('uid=', '')
-                user = User.objects.get(id=uid)
-
-        if not user:
-            return None
-        else:
+        cookie = request._request.META['HTTP_COOKIE']
+        cookie = cookie.replace(' ', '')
+        if 'uid' in cookie:
+            uid = cookie.replace('uid=', '')
+            user = User.objects.get(id=uid)
             return (user, None)
+        return None
 
 
 class UserInfo(APIView):
@@ -100,7 +97,6 @@ class UserInfo(APIView):
             for name, value in serializer.data.items():
                 if value:
                     if name == 'password':
-                        print('mimao change')
                         user.set_password(value)
                     else:
                         setattr(user, name, value)
@@ -131,7 +127,10 @@ class UserSignUp(APIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            return Response(serializer.data)
+            user = User.objects.get(Q(username=request.data['username']))
+            response = Response(serializer.data)
+            response.set_cookie(api_settings.JWT_AUTH_COOKIE, get_token(user))
+            return response
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -159,7 +158,9 @@ class UserLogin(APIView):
         serializer = self.get_serializer(data=request.data)
 
         if serializer.is_valid(raise_exception=True):
-            return Response('SUCCESS')
+            response = Response('SUCCESS')
+            response.set_cookie(api_settings.JWT_AUTH_COOKIE, get_token(request.user))
+            return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
