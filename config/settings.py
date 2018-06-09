@@ -140,9 +140,22 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 
+secrets_path = 'config/secrets/'
 
-JWT_EXPIRATION_DELTA = datetime.timedelta(days=7)
-JWT_AUTH_COOKIE = 'token'
+JWT_AUTH = {
+    'JWT_ALGORITHM': 'RS256',
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(minutes=30),
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+    'JWT_PRIVATE_KEY': open(secrets_path + 'jwtRS256.key').read(),
+    'JWT_PUBLIC_KEY': open(secrets_path + 'jwtRS256.key.pub').read(),
+    'JWT_AUTH_COOKIE': 'JWT'
+}
+
+PROTOCOL = os.getenv('PROTOCOL', 'https')
+HOST = os.getenv('HOST', 'sandbox.tas-kit.com')
+BASE_URL = '{0}://{1}'.format(PROTOCOL, HOST)
+WEBMAIN_URL = '{0}/web/main/'.format(BASE_URL)
 
 AUTHENTICATION_BACKENDS = (
     'userservice.views.CustomBackend',
