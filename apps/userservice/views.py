@@ -1,7 +1,7 @@
 from rest_framework import mixins
 from rest_framework import viewsets
 from .serializers import (UserRegSerializer, UserDetailSerializer, UserLoginSerializer, UserUpdateSerializer,
-                          UsersSerializers
+                          UsersSerializers, ResetPasswordSerializers, SetPasswordSerializers
                           )
 from django.contrib.auth import get_user_model
 from rest_framework import permissions
@@ -14,6 +14,11 @@ from rest_framework.views import APIView
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
 from rest_framework.pagination import PageNumberPagination
+from .models import VerifyCode
+from django.core.mail import send_mail
+import uuid
+from django.template.loader import get_template
+from django.conf import settings
 
 User = get_user_model()
 
@@ -29,7 +34,7 @@ class CustomBackend(ModelBackend):
             print(user)
             if user.check_password(password):
                 return user
-        except Exception as e:
+        except:
             return None
 
 
@@ -43,13 +48,14 @@ class CookieAuthentication(BaseAuthentication):
     def authenticate(self, request):
         # 根据uuid获取user
 
-        # cookie = request._request.META['HTTP_COOKIE']
-        # cookie_str = cookie.replace(' ', '')
-        # if 'uid' in cookie_str:
-        #     uid = cookie_dict.replace('uid=', '')
-        #     user = User.objects.get(id=uid)
+        cookie = request._request.META.get('HTTP_COOKIE')
+        user = None
+        if cookie:
+            cookie_str = cookie.replace(' ', '')
+            if 'uid' in cookie_str:
+                uid = cookie_str.replace('uid=', '')
+                user = User.objects.get(id=uid)
 
-        user = User.objects.get(id='8a2a4f240c9d40a3b930483c4f86a696')  # 需要把硬编码替换下来
         if not user:
             return None
         else:
@@ -58,7 +64,8 @@ class CookieAuthentication(BaseAuthentication):
 
 class UserInfo(APIView):
     '''
-    获取用户个人信息
+    list 获取用户个人信息
+    create 修改个人信息
     '''
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (CookieAuthentication,)
@@ -104,6 +111,9 @@ class UserInfo(APIView):
 
 
 class UserSignUp(APIView):
+    '''
+    用户注册
+    '''
     permission_classes = ()
     authentication_classes = ()
 
@@ -127,6 +137,9 @@ class UserSignUp(APIView):
 
 
 class UserLogin(APIView):
+    '''
+    用户登入
+    '''
     permission_classes = ()
     authentication_classes = ()
     # serializer_class = UserLoginSerializer
@@ -151,6 +164,9 @@ class UserLogin(APIView):
 
 
 class UsersPage(PageNumberPagination):
+    '''
+    分页设置
+    '''
     page_size = 20
     page_size_query_param = 'page_size'
     page_query_param = "page"
@@ -158,12 +174,12 @@ class UsersPage(PageNumberPagination):
 
 
 class UsersViewSet(
-    # mixins.CreateModelMixin,
-    # mixins.UpdateModelMixin,
-    mixins.ListModelMixin,
-    # mixins.DestroyModelMixin,
-    mixins.RetrieveModelMixin,
+        mixins.ListModelMixin,
+        mixins.RetrieveModelMixin,
         viewsets.GenericViewSet):
+    '''
+    非个人用户查询
+    '''
 
     serializer_class = UsersSerializers
     queryset = User.objects.all()
@@ -174,3 +190,58 @@ class UsersViewSet(
 
     filter_fields = ('id', 'username', 'phone', 'email')
     search_fields = filter_fields
+
+
+class ResetPassword(APIView):
+    '''
+    重置密码 获取 code
+    '''
+
+    def get_serializer(self, *args, **kwargs):
+        """
+        Return the serializer instance that should be used for validating and
+        deserializing input, and for serializing output.
+        """
+        serializer_class = ResetPasswordSerializers
+        return serializer_class(*args, **kwargs)
+
+    def post(self, request, *arg, **kwargs):
+        data = self.get_serializer(data=request.data)
+        if data.is_valid(raise_exception=True):
+            email = data.data.get('email')
+            code = uuid.uuid4()
+            obj = VerifyCode(email=email, code=code)
+            obj.save()
+            t = get_template('email.html')
+            html = t.render({'code': code})
+
+            send_mail(subject='重置密码',
+                              from_email=settings.EMAIL_HOST_USER,
+                              message='',
+                              recipient_list=[email, ],
+                              html_message=html,
+                              fail_silently=False)
+            return Response('SUCCESS')
+        else:
+            Response(data.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SetPassword(APIView):
+    '''
+    重置密码
+    '''
+
+    def get_serializer(self, *args, **kwargs):
+        """
+        Return the serializer instance that should be used for validating and
+        deserializing input, and for serializing output.
+        """
+        serializer_class = SetPasswordSerializers
+        return serializer_class(*args, **kwargs)
+
+    def post(self, request, *arg, **kwargs):
+        data = self.get_serializer(data=request.data)
+        if data.is_valid(raise_exception=True):
+            return Response('SUCCESS')
+        else:
+            Response(data.errors, status=status.HTTP_400_BAD_REQUEST)
