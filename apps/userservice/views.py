@@ -134,8 +134,8 @@ class UserSignUp(APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             user = User.objects.get(Q(username=request.data['username']))
-            response = redirect(settings.WEBMAIN_URL)
-            response.set_cookie('JWT', get_token(user))
+            response = Response(serializer.data)
+            response.set_cookie(api_settings.JWT_AUTH_COOKIE, get_token(user))
             return response
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -164,8 +164,9 @@ class UserLogin(APIView):
         serializer = self.get_serializer(data=request.data)
 
         if serializer.is_valid(raise_exception=True):
-            response = redirect(settings.WEBMAIN_URL)
-            response.set_cookie('JWT', get_token(request.user))
+            response = Response('SUCCESS')
+            response.set_cookie(api_settings.JWT_AUTH_COOKIE, get_token(request.user))
+            print('set jwt', response.cookies)
             return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
