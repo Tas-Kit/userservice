@@ -48,13 +48,14 @@ class CookieAuthentication(BaseAuthentication):
     def authenticate(self, request):
         # 根据uuid获取user
 
-        # cookie = request._request.META['HTTP_COOKIE']
-        # cookie_str = cookie.replace(' ', '')
-        # if 'uid' in cookie_str:
-        #     uid = cookie_dict.replace('uid=', '')
-        #     user = User.objects.get(id=uid)
+        cookie = request._request.META.get('HTTP_COOKIE')
+        user = None
+        if cookie:
+            cookie_str = cookie.replace(' ', '')
+            if 'uid' in cookie_str:
+                uid = cookie_str.replace('uid=', '')
+                user = User.objects.get(id=uid)
 
-        user = User.objects.get(id='8a2a4f240c9d40a3b930483c4f86a696')  # 需要把硬编码替换下来
         if not user:
             return None
         else:
