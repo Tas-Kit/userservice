@@ -194,7 +194,7 @@ class UsersViewSet(
     def get_queryset(self):
         ids = self.request.GET.getlist('id', None)
 
-        if isinstance(ids, list):
+        if ids:
             return User.objects.filter(id__in=ids)
         else:
             return User.objects.all()
