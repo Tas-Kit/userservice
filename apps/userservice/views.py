@@ -182,14 +182,22 @@ class UsersViewSet(
     '''
 
     serializer_class = UsersSerializers
-    queryset = User.objects.all()
+    # queryset = User.objects.all()
     # authentication_classes = ()
     pagination_class = UsersPage
 
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
 
-    filter_fields = ('id', 'username', 'phone', 'email')
+    filter_fields = ('username', 'phone', 'email')
     search_fields = filter_fields
+
+    def get_queryset(self):
+        ids = self.request.GET.getlist('id', None)
+
+        if isinstance(ids, list):
+            return User.objects.filter(id__in=ids)
+        else:
+            return User.objects.all()
 
 
 class ResetPassword(APIView):
