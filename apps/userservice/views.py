@@ -16,7 +16,6 @@ from django.db.models import Q
 from rest_framework.pagination import PageNumberPagination
 from .models import VerifyCode
 from django.core.mail import send_mail
-from django.shortcuts import redirect
 import uuid
 from django.template.loader import get_template
 from django.conf import settings
@@ -205,6 +204,8 @@ class ResetPassword(APIView):
     '''
     重置密码 获取 code
     '''
+    permission_classes = ()
+    authentication_classes = ()
 
     def get_serializer(self, *args, **kwargs):
         """
@@ -217,28 +218,33 @@ class ResetPassword(APIView):
     def post(self, request, *arg, **kwargs):
         data = self.get_serializer(data=request.data)
         if data.is_valid(raise_exception=True):
-            email = data.data.get('email')
+            email = data.validated_data.get('email')
             code = uuid.uuid4()
             obj = VerifyCode(email=email, code=code)
             obj.save()
             t = get_template('email.html')
             html = t.render({'code': code})
-
-            send_mail(subject='重置密码',
-                              from_email=settings.EMAIL_HOST_USER,
-                              message='',
-                              recipient_list=[email, ],
-                              html_message=html,
-                              fail_silently=False)
-            return Response('SUCCESS')
+            try:
+                send_mail(subject='重置密码',
+                                  from_email=settings.EMAIL_HOST_USER,
+                                  message='',
+                                  recipient_list=[email, ],
+                                  html_message=html,
+                                  fail_silently=False)
+                return Response('SUCCESS')
+            except Exception as e:
+                print(e)
+                return Response({'non_field_errors': 'Failed to send mail'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
-            Response(data.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SetPassword(APIView):
     '''
     重置密码
     '''
+    permission_classes = ()
+    authentication_classes = ()
 
     def get_serializer(self, *args, **kwargs):
         """
