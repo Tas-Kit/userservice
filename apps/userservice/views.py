@@ -52,7 +52,7 @@ class CookieAuthentication(BaseAuthentication):
         cookies = request._request.META['HTTP_COOKIE']
         cookies = cookies.replace(' ', '').split(';')
         for cookie in cookies:
-            if 'uid' in cookie:
+            if cookie.startswith('uid='):
                 uid = cookie.replace('uid=', '')
                 user = User.objects.get(id=uid)
                 return (user, None)
