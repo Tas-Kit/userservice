@@ -22,19 +22,19 @@ from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
 router = routers.DefaultRouter()
 router.register(r'', UsersViewSet, base_name='users')
 
-api_v1_userservice_url = [
+urlpatterns = [
     # path('api/v1/', include(router.urls)),
-    path('signup/', UserSignUp.as_view()),
-    path('login/', UserLogin.as_view()),
+    path('exempt/signup/', UserSignUp.as_view()),
+    path('exempt/login/', UserLogin.as_view()),
+    path('exempt/reset_password/', ResetPassword.as_view()),
+    path('exempt/set_password/', SetPassword.as_view()),
     path('userinfo/', UserInfo.as_view()),
     path('users/', include(router.urls)),
-    path('reset_password/', ResetPassword.as_view()),
-    path('set_password/', SetPassword.as_view()),
     path('get_jwt/', obtain_jwt_token),
     path('refresh_jwt/', refresh_jwt_token),
     path('user_docs/', include_docs_urls(title="user")),
 ]
 
-urlpatterns = [
-    path('api/v1/userservice/', include(api_v1_userservice_url))
-]
+# urlpatterns = [
+#     path('api/v1/userservice/', include(api_v1_userservice_url))
+# ]

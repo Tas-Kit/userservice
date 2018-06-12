@@ -188,5 +188,6 @@ class SetPasswordSerializers(serializers.Serializer):
         else:
             password = attrs['password']
             user.set_password(password)
+            user.save()
             VerifyCode.objects.filter(email=email).delete()
             return attrs
