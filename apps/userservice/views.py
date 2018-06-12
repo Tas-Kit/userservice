@@ -49,12 +49,13 @@ def get_token(user):
 class CookieAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
-        cookie = request._request.META['HTTP_COOKIE']
-        cookie = cookie.replace(' ', '')
-        if 'uid' in cookie:
-            uid = cookie.replace('uid=', '')
-            user = User.objects.get(id=uid)
-            return (user, None)
+        cookies = request._request.META['HTTP_COOKIE']
+        cookies = cookies.replace(' ', '').split(';')
+        for cookie in cookies:
+            if 'uid' in cookie:
+                uid = cookie.replace('uid=', '')
+                user = User.objects.get(id=uid)
+                return (user, None)
         return None
 
 
