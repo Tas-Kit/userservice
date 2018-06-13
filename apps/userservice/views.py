@@ -28,7 +28,7 @@ User = get_user_model()
 
 class CustomBackend(ModelBackend):
     """
-    自定义登陆验证
+    Auth
     """
 
     def authenticate(self, username=None, password=None, **kwargs):
@@ -41,7 +41,6 @@ class CustomBackend(ModelBackend):
 
 
 def get_token(user):
-    # 需要获取token
     payload = jwt_payload_handler(user)
     return jwt_encode_handler(payload)
 
@@ -61,8 +60,8 @@ class CookieAuthentication(BaseAuthentication):
 
 class UserInfo(APIView):
     '''
-    list 获取用户个人信息
-    create 修改个人信息
+    list get personal info
+    create modify personal info
     '''
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (CookieAuthentication,)
@@ -108,7 +107,7 @@ class UserInfo(APIView):
 
 class UserSignUp(APIView):
     '''
-    用户注册
+    User sign up
     '''
     permission_classes = ()
     authentication_classes = ()
@@ -137,7 +136,7 @@ class UserSignUp(APIView):
 
 class UserLogin(APIView):
     '''
-    用户登入
+    user login
     '''
     permission_classes = ()
     authentication_classes = ()
@@ -166,7 +165,7 @@ class UserLogin(APIView):
 
 class UsersPage(PageNumberPagination):
     '''
-    分页设置
+    paging
     '''
     page_size = 20
     page_size_query_param = 'page_size'
@@ -179,7 +178,7 @@ class UsersViewSet(
         mixins.RetrieveModelMixin,
         viewsets.GenericViewSet):
     '''
-    非个人用户查询
+    Users lookup
     '''
 
     serializer_class = UsersSerializers
@@ -203,7 +202,7 @@ class UsersViewSet(
 
 class ResetPassword(APIView):
     '''
-    重置密码 获取 code
+    reset password get code
     '''
     permission_classes = ()
     authentication_classes = ()
@@ -226,7 +225,7 @@ class ResetPassword(APIView):
             t = get_template('email.html')
             html = t.render({'code': code})
             try:
-                send_mail(subject='重置密码',
+                send_mail(subject='Reset Password',
                                   from_email=settings.EMAIL_HOST_USER,
                                   message='',
                                   recipient_list=[email, ],
@@ -242,7 +241,7 @@ class ResetPassword(APIView):
 
 class SetPassword(APIView):
     '''
-    重置密码
+    Reset password
     '''
     permission_classes = ()
     authentication_classes = ()
