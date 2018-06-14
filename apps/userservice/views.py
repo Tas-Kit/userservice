@@ -180,6 +180,7 @@ class UsersViewSet(
     '''
     Users lookup
     '''
+    # lookup_field = 'uid'
 
     serializer_class = UsersSerializers
     # queryset = User.objects.all()

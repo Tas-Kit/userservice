@@ -14,7 +14,8 @@ User = get_user_model()
 
 def validate_password(password):
     '''
-    密码包含数字和字母
+    verify  password must have num and alphabet
+
     '''
     if not re.findall('[a-zA-Z]+', password):
         return False
@@ -28,7 +29,7 @@ def validate_password(password):
 
 class UserDetailSerializer(serializers.ModelSerializer):
     """
-    用户详情序列化类
+    user serializer
     """
     class Meta:
         model = User
@@ -36,13 +37,13 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(label='用户名', help_text='用户名', required=False, allow_blank=True, validators=[
+    username = serializers.CharField(label='user name', help_text='user name', required=False, allow_blank=True, validators=[
                                      UniqueValidator(queryset=User.objects.all(), message="That username is already exists")],
                                      )
-    email = serializers.EmailField(label='邮箱', help_text='邮箱', required=False, allow_blank=True, validators=[
+    email = serializers.EmailField(label='email', help_text='email', required=False, allow_blank=True, validators=[
                                    UniqueValidator(queryset=User.objects.all(), message="That email is already exists")],
                                    )
-    password = serializers.CharField(label='密码', help_text='密码', allow_blank=True, required=False, min_length=8,
+    password = serializers.CharField(label='password', help_text='password', allow_blank=True, required=False, min_length=8,
                                      error_messages={
                                          'min_length': 'Password length must not be less than 8 characters'
                                      })
@@ -59,7 +60,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 
 class UserRegSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(label="用户名", help_text="用户名", required=True,
+    username = serializers.CharField(label="username", help_text="username", required=True,
                                      validators=[
                                          UniqueValidator(queryset=User.objects.all(),
                                                          message="That username is already exists")],
@@ -69,7 +70,7 @@ class UserRegSerializer(serializers.ModelSerializer):
                                      })
 
     password = serializers.CharField(
-        help_text="密码", label="密码", write_only=True, required=True, min_length=8,
+        help_text="password", label="password", write_only=True, required=True, min_length=8,
         error_messages={
             'blank': 'Please enter the password',
             'required': 'Please enter the password',
@@ -77,7 +78,7 @@ class UserRegSerializer(serializers.ModelSerializer):
         }
     )
 
-    email = serializers.EmailField(label='邮箱', help_text='邮箱', validators=[
+    email = serializers.EmailField(label='email', help_text='email', validators=[
                                    UniqueValidator(queryset=User.objects.all(), message="That email is already exists")],
                                    error_messages={
                                    'blank': 'Please enter the email',
@@ -102,8 +103,8 @@ class UserRegSerializer(serializers.ModelSerializer):
 
 
 class UserLoginSerializer(serializers.Serializer):
-    username = serializers.CharField(label="用户名或邮箱", help_text="用户名或邮箱", required=True, allow_blank=False)
-    password = serializers.CharField(help_text="密码", label="密码", write_only=True)
+    username = serializers.CharField(label="username or email", help_text="username or email", required=True, allow_blank=False)
+    password = serializers.CharField(help_text="password", label="password", write_only=True)
 
     def validate(self, attrs):
         credentials = {
@@ -112,9 +113,7 @@ class UserLoginSerializer(serializers.Serializer):
         }
 
         if all(credentials.values()):
-            # print(credentials)
-            user = authenticate(**credentials)  # 官方验证
-            # print(user)
+            user = authenticate(**credentials)
             self.context.get('request').user = user
 
             if user:
@@ -140,11 +139,11 @@ class UsersSerializers(serializers.ModelSerializer):
 
 
 class ResetPasswordSerializers(serializers.Serializer):
-    email = serializers.EmailField(label='邮箱', help_text='邮箱')
+    email = serializers.EmailField(label='email', help_text='email')
 
     def validate_email(self, email):
         '''
-        验证邮箱是否存在
+        validate email existes
         '''
         try:
             User.objects.get(email=email)
@@ -155,8 +154,8 @@ class ResetPasswordSerializers(serializers.Serializer):
 
 
 class SetPasswordSerializers(serializers.Serializer):
-    code = serializers.CharField(label='编码', max_length=50)
-    password = serializers.CharField(help_text="密码", label="密码", write_only=True, min_length=8, required=True,
+    code = serializers.CharField(label='code', max_length=50)
+    password = serializers.CharField(help_text="password", label="password", write_only=True, min_length=8, required=True,
                                      error_messages={
                                          'required': 'Please enter the username',
                                          'min_length': 'Password length must not be less than 8 characters'
