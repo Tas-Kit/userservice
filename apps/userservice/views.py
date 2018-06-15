@@ -20,6 +20,7 @@ import uuid
 from django.template.loader import get_template
 from django.conf import settings
 from rest_framework_jwt.settings import api_settings
+import validators
 
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
@@ -173,21 +174,6 @@ class UsersPage(PageNumberPagination):
     max_page_size = 50
 
 
-def uuid_check(uuid):
-
-    if len(uuid) != 36:
-        return False
-
-    tmp = uuid.split('-')
-    if len(tmp) != 5:
-        return False
-
-    if len(tmp[0]) == 8 and len(tmp[1]) == 4 and len(tmp[2]) == 4 and len(tmp[3]) == 4 and len(tmp[4]) == 5:
-        return True
-    else:
-        return False
-
-
 class UsersViewSet(
         mixins.ListModelMixin,
         mixins.RetrieveModelMixin,
@@ -212,7 +198,7 @@ class UsersViewSet(
         if not ids:
             return User.objects.all()
 
-        validate_uuid = [i for i in ids if uuid_check(i)]
+        validate_uuid = [i for i in ids if validators.uuid(i)]
         return User.objects.filter(id__in=validate_uuid)
 
 
