@@ -173,6 +173,21 @@ class UsersPage(PageNumberPagination):
     max_page_size = 50
 
 
+def uuid_check(uuid):
+
+    if len(uuid) != 36:
+        return False
+
+    tmp = uuid.split('-')
+    if len(tmp) != 5:
+        return False
+
+    if len(tmp[0]) == 8 and len(tmp[1]) == 4 and len(tmp[2]) == 4 and len(tmp[3]) == 4 and len(tmp[4]) == 5:
+        return True
+    else:
+        return False
+
+
 class UsersViewSet(
         mixins.ListModelMixin,
         mixins.RetrieveModelMixin,
@@ -194,11 +209,11 @@ class UsersViewSet(
 
     def get_queryset(self):
         ids = self.request.GET.getlist('id', None)
-
-        if ids:
-            return User.objects.filter(id__in=ids)
-        else:
+        if not ids:
             return User.objects.all()
+
+        validate_uuid = [i for i in ids if uuid_check(i)]
+        return User.objects.filter(id__in=validate_uuid)
 
 
 class ResetPassword(APIView):
