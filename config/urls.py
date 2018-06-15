@@ -18,7 +18,7 @@ from rest_framework.documentation import include_docs_urls
 from userservice.views import UserSignUp, UserLogin, UserInfo, UsersViewSet, ResetPassword, SetPassword
 from rest_framework import routers
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
-
+from django.http import HttpResponse
 router = routers.DefaultRouter()
 router.register(r'', UsersViewSet, base_name='users')
 
@@ -36,5 +36,6 @@ api_v1_userservice_url = [
 ]
 
 urlpatterns = [
+    path('healthcheck/', lambda request:HttpResponse('HEALTHY')),
     path('api/v1/userservice/', include(api_v1_userservice_url))
 ]
