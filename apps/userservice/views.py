@@ -20,6 +20,7 @@ import uuid
 from django.template.loader import get_template
 from django.conf import settings
 from rest_framework_jwt.settings import api_settings
+import validators
 
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
@@ -180,6 +181,7 @@ class UsersViewSet(
     '''
     Users lookup
     '''
+    # lookup_field = 'uid'
 
     serializer_class = UsersSerializers
     # queryset = User.objects.all()
@@ -193,11 +195,11 @@ class UsersViewSet(
 
     def get_queryset(self):
         ids = self.request.GET.getlist('id', None)
-
-        if ids:
-            return User.objects.filter(id__in=ids)
-        else:
+        if not ids:
             return User.objects.all()
+
+        validate_uuid = [i for i in ids if validators.uuid(i)]
+        return User.objects.filter(id__in=validate_uuid)
 
 
 class ResetPassword(APIView):
