@@ -17,7 +17,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.core.mail import send_mail
 from django.template.loader import get_template
 from rest_framework_jwt.settings import api_settings
-from userservice.utils import get_code, verify_code
+from userservice.utils import get_code
 import validators
 
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
