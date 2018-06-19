@@ -63,7 +63,7 @@ AUTH_USER_MODEL = 'userservice.User'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -132,7 +132,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -140,10 +140,30 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+secrets_path = 'config/secrets/'
 
-JWT_EXPIRATION_DELTA = datetime.timedelta(days=7)
-JWT_AUTH_COOKIE = 'token'
+JWT_AUTH = {
+    'JWT_ALGORITHM': 'RS256',
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(minutes=30),
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+    'JWT_PRIVATE_KEY': open(secrets_path + 'jwtRS256.key').read(),
+    'JWT_PUBLIC_KEY': open(secrets_path + 'jwtRS256.key.pub').read(),
+    'JWT_AUTH_COOKIE': 'JWT'
+}
+
+PROTOCOL = os.getenv('PROTOCOL', 'https')
+HOST = os.getenv('HOST', 'sandbox.tas-kit.com')
+BASE_URL = '{0}://{1}'.format(PROTOCOL, HOST)
+WEBMAIN_URL = '{0}/web/main/'.format(BASE_URL)
 
 AUTHENTICATION_BACKENDS = (
     'userservice.views.CustomBackend',
 )
+
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.sendgrid.net')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'taskit')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'abcd1234')
+EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', True)

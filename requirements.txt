@@ -18,4 +18,7 @@ six==1.11.0
 uritemplate==3.0.0
 urllib3==1.22
 django-cors-headers==2.2.0
+validators==0.12.2
 psycopg2-binary
+djangorestframework-jwt
+cryptography
