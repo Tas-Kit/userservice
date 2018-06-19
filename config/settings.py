@@ -167,3 +167,5 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'taskit')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'abcd1234')
 EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', True)
+
+VERI_CODE_EXP = os.getenv('VERI_CODE_EXP', 60)

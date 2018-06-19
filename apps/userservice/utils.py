@@ -3,7 +3,7 @@ import hashlib
 from django.conf import settings
 
 
-def get_code(email, t=int(time.time() / 100)):
+def get_code(email, t=int(time.time() / settings.VERI_CODE_EXP)):
     t = str(t)
     k = settings.SECRET_KEY
     s = email + ';' + t + ';' + k
@@ -12,7 +12,7 @@ def get_code(email, t=int(time.time() / 100)):
 
 
 def verify_code(email, code):
-    t = int(time.time() / 100)
+    t = int(time.time() / settings.VERI_CODE_EXP)
     prev = get_code(email, t - 1)
     curr = get_code(email, t)
     return code == prev or code == curr
