@@ -17,6 +17,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.core.mail import send_mail
 from django.template.loader import get_template
 from rest_framework_jwt.settings import api_settings
+from utils import get_code, verify_code
 import validators
 
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
@@ -218,7 +219,7 @@ class ResetPassword(APIView):
         data = self.get_serializer(data=request.data)
         if data.is_valid(raise_exception=True):
             email = data.validated_data.get('email')
-            code = 'test code'
+            code = get_code(email)
             t = get_template('email.html')
             html = t.render({'code': code})
             try:
