@@ -144,7 +144,7 @@ secrets_path = 'config/secrets/'
 
 JWT_AUTH = {
     'JWT_ALGORITHM': 'RS256',
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(minutes=30),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(minutes=int(os.getenv('JWT_EXPIRATION_DELTA', 30))),
     'JWT_ALLOW_REFRESH': True,
     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
     'JWT_PRIVATE_KEY': open(secrets_path + 'jwtRS256.key').read(),
@@ -165,7 +165,7 @@ EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.Email
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.sendgrid.net')
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'taskit')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'abcd1234')
-EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', True)
 
-VERI_CODE_EXP = os.getenv('VERI_CODE_EXP', 60)
+VERI_CODE_EXP = int(os.getenv('VERI_CODE_EXP', 60))
