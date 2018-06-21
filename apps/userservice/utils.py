@@ -3,7 +3,9 @@ import hashlib
 from django.conf import settings
 
 
-def get_code(email, t=int(time.time() / settings.VERI_CODE_EXP)):
+def get_code(email, t=None):
+    if t is None:
+        t = int(time.time() / settings.VERI_CODE_EXP)
     t = str(t)
     k = settings.SECRET_KEY
     s = email + ';' + t + ';' + k
