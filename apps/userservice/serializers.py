@@ -138,7 +138,7 @@ class UsersSerializers(serializers.ModelSerializer):
         setattr(User, 'uid', User.id)
         model = User
         fields = ('uid', 'username', 'first_name', 'last_name',
-                  'email', 'birthday', 'gender', 'phone', 'address')
+                  'birthday', 'gender', 'phone', 'address')
 
 
 class ResetPasswordSerializers(serializers.Serializer):
