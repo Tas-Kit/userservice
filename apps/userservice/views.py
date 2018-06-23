@@ -194,12 +194,11 @@ class UsersViewSet(
     search_fields = filter_fields
 
     def get_queryset(self):
-        ids = self.request.GET.getlist('id', None)
-        if not ids:
-            return User.objects.all()
-
+        ids = self.request.GET.getlist('uid', [])
         validate_uuid = [i for i in ids if validators.uuid(i)]
-        return User.objects.filter(id__in=validate_uuid)
+        querysets = User.objects.filter(id__in=validate_uuid).order_by('date_joined')
+        [setattr(item, 'uid', item.id) for item in querysets]
+        return querysets
 
 
 class ResetPassword(APIView):

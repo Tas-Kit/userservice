@@ -132,9 +132,12 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 class UsersSerializers(serializers.ModelSerializer):
+    uid = serializers.UUIDField(format='hex_verbose')
+
     class Meta:
+        setattr(User, 'uid', User.id)
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name',
+        fields = ('uid', 'username', 'first_name', 'last_name',
                   'email', 'birthday', 'gender', 'phone', 'address')
 
 
