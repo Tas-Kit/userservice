@@ -1,0 +1,6 @@
+{% load i18n %}{% autoescape off %}
+{% blocktrans %}You're receiving this email because you requested a verification code.{% endblocktrans %}
+{% trans "Here is the verification code" %} {{ code }}
+{% trans "Thanks for using taskit!" %}
+{% blocktrans %}taskit team{% endblocktrans %}
+{% endautoescape %}
