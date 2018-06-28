@@ -1,6 +1,15 @@
 {% load i18n %}{% autoescape off %}
-{% blocktrans %}You're receiving this email because you requested a verification code.{% endblocktrans %}
-{% trans "Here is the verification code" %} {{ code }}
-{% trans "Thanks for using taskit!" %}
-{% blocktrans %}taskit team{% endblocktrans %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% trans "Reset Password" %}</title>
+    </head>
+    <body>
+        <p>{% blocktrans %}You're receiving this email because you requested a verification code.{% endblocktrans %}</p>
+        <p>{% trans "This is your verification code:" %} {{ code }}</p>
+        <p>{% trans "Thank you for using taskit!" %}</p>
+        <p>{% blocktrans %}taskit team{% endblocktrans %}</p>
+    </body>
+</html>
 {% endautoescape %}
