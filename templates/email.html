@@ -1,0 +1,15 @@
+{% load i18n %}{% autoescape off %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% trans "重置密码" %}</title>
+    </head>
+    <body>
+        <p>{% trans "应您的要求我们将验证码发送到了这个邮箱。" %}</p>
+        <p>{% trans "这里是您的验证码：" %} {{ code }}</p>
+        <p>{% trans "感谢您使用太事齐！" %}</p>
+        <p>{% trans "太事齐团队" %}</p>
+    </body>
+</html>
+{% endautoescape %}
