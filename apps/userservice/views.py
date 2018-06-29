@@ -224,7 +224,7 @@ class ResetPassword(APIView):
             html = t.render({'code': code})
             try:
                 send_mail(subject='Reset Password',
-                                  from_email='noreply@tas-kit.com',
+                                  from_email='no-reply@tas-kit.com',
                                   message='',
                                   recipient_list=[email, ],
                                   html_message=html,
