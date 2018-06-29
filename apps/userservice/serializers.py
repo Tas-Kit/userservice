@@ -14,7 +14,7 @@ User = get_user_model()
 
 def validate_password(password):
     '''
-    verify  password must have num and alphabet
+    verify password must have num and alphabet
 
     '''
     if not re.findall('[a-zA-Z]+', password):
