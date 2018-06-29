@@ -15,7 +15,7 @@ User = get_user_model()
 
 def validate_password(password):
     '''
-    verify  password must have num and alphabet
+    verify password must have num and alphabet
 
     '''
     if not re.findall('[a-zA-Z]+', password):
@@ -134,10 +134,13 @@ class UserLoginSerializer(serializers.Serializer):
 
 class UsersSerializers(serializers.ModelSerializer):
 
+    uid = serializers.UUIDField(format='hex_verbose')
+
     class Meta:
+        setattr(User, 'uid', User.id)
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name',
-                  'email', 'birthday', 'gender', 'phone', 'address')
+        fields = ('uid', 'username', 'first_name', 'last_name',
+                  'birthday', 'gender', 'phone', 'address')
 
 
 class ResetPasswordSerializers(serializers.Serializer):

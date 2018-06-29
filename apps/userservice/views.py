@@ -188,16 +188,16 @@ class UsersViewSet(
 
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
 
-    filter_fields = ('username', 'phone', 'email')
+    filter_fields = ('username', 'email')
     search_fields = filter_fields
 
     def get_queryset(self):
-        ids = self.request.GET.getlist('id', None)
-        if not ids:
-            return User.objects.all()
-
+        ids = self.request.GET.getlist('uid', [])
         validate_uuid = [i for i in ids if validators.uuid(i)]
-        return User.objects.filter(id__in=validate_uuid)
+        usernames = self.request.GET.getlist('username')
+        querysets = User.objects.filter(Q(id__in=validate_uuid) | Q(username__in=usernames)).order_by('date_joined')
+        [setattr(item, 'uid', item.id) for item in querysets]
+        return querysets
 
 
 class ResetPassword(APIView):
