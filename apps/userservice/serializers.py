@@ -7,6 +7,7 @@ from datetime import datetime
 from datetime import timedelta
 from .models import VerifyCode
 import re
+from userservice.utils import verify_code
 
 
 User = get_user_model()
@@ -132,6 +133,7 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 class UsersSerializers(serializers.ModelSerializer):
+
     uid = serializers.UUIDField(format='hex_verbose')
 
     class Meta:
@@ -157,39 +159,28 @@ class ResetPasswordSerializers(serializers.Serializer):
 
 
 class SetPasswordSerializers(serializers.Serializer):
-    code = serializers.CharField(label='code', max_length=50)
+    code = serializers.CharField(label='code', max_length=6)
+    email = serializers.CharField(label='email', max_length=100)
     password = serializers.CharField(help_text="password", label="password", write_only=True, min_length=8, required=True,
                                      error_messages={
                                          'required': 'Please enter the username',
                                          'min_length': 'Password length must not be less than 8 characters'
                                      })
 
-    def validate_code(self, code):
-        code = VerifyCode.objects.filter(code=code).order_by("-add_time")
-        if code:
-            last_code = code[0]
-            ten_mintes_ago = datetime.now() - timedelta(hours=0, minutes=10, seconds=0)
-            if ten_mintes_ago > last_code.add_time:
-                raise serializers.ValidationError("Hyperlink expiration,Please apply again")
-            self.context['email'] = last_code.email
-            return code
-        else:
-            raise serializers.ValidationError("Hyperlink invalid,Please apply again")
-
     def validate_password(self, password):
         if not validate_password(password):
-            raise serializers.ValidationError('password must include Numbers and letters')
+            raise serializers.ValidationError('password must include Numbers and letters.')
         return password
 
     def validate(self, attrs):
-        email = self.context.get('email')
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(email=attrs['email'])
         except User.DoesNotExist:
-            raise serializers.ValidationError('Hyperlink invalid,Please apply again')
-        else:
+            raise serializers.ValidationError('Unable to find user with given Email.')
+        if verify_code(attrs['email'], attrs['code']):
             password = attrs['password']
             user.set_password(password)
             user.save()
-            VerifyCode.objects.filter(email=email).delete()
             return attrs
+        else:
+            raise serializers.ValidationError('Invalid verification code.')

@@ -14,12 +14,10 @@ from rest_framework.views import APIView
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
 from rest_framework.pagination import PageNumberPagination
-from .models import VerifyCode
 from django.core.mail import send_mail
-import uuid
 from django.template.loader import get_template
-from django.conf import settings
 from rest_framework_jwt.settings import api_settings
+from userservice.utils import get_code
 import validators
 
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
@@ -221,14 +219,12 @@ class ResetPassword(APIView):
         data = self.get_serializer(data=request.data)
         if data.is_valid(raise_exception=True):
             email = data.validated_data.get('email')
-            code = uuid.uuid4()
-            obj = VerifyCode(email=email, code=code)
-            obj.save()
+            code = get_code(email)
             t = get_template('email.html')
             html = t.render({'code': code})
             try:
                 send_mail(subject='Reset Password',
-                                  from_email=settings.EMAIL_HOST_USER,
+                                  from_email='no-reply@tas-kit.com',
                                   message='',
                                   recipient_list=[email, ],
                                   html_message=html,

@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -71,6 +72,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.template.context_processors.i18n',
             ],
         },
     },
@@ -124,8 +126,6 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
@@ -134,6 +134,16 @@ USE_L10N = True
 
 USE_TZ = False
 
+LANGUAGE_CODE = "zh-cn"
+
+LANGUAGES = (
+    ('en', ('English')),
+    ('zh-cn', ('中文简体')),
+)
+
+LOCALE_PATHS = (
+    os.path.join(BASE_DIR, 'locale'),
+)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
@@ -144,7 +154,7 @@ secrets_path = 'config/secrets/'
 
 JWT_AUTH = {
     'JWT_ALGORITHM': 'RS256',
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(minutes=30),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(minutes=int(os.getenv('JWT_EXPIRATION_DELTA', 30))),
     'JWT_ALLOW_REFRESH': True,
     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
     'JWT_PRIVATE_KEY': open(secrets_path + 'jwtRS256.key').read(),
@@ -161,9 +171,11 @@ AUTHENTICATION_BACKENDS = (
     'userservice.views.CustomBackend',
 )
 
-EMAIL_HOST = 'smtp.qq.com'
-EMAIL_PORT = 465
-EMAIL_HOST_USER = 'lambdang@foxmail.com'
-EMAIL_HOST_PASSWORD = 'mima'
-EMAIL_USE_SSL = True
-EMAIL_USE_TLS = False
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.sendgrid.net')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'taskit')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'abcd1234')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', True)
+
+VERI_CODE_EXP = int(os.getenv('VERI_CODE_EXP', 60))
