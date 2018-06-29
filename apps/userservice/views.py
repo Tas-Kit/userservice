@@ -190,13 +190,14 @@ class UsersViewSet(
 
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
 
-    filter_fields = ('username', 'phone', 'email')
+    filter_fields = ('username', 'email')
     search_fields = filter_fields
 
     def get_queryset(self):
         ids = self.request.GET.getlist('uid', [])
         validate_uuid = [i for i in ids if validators.uuid(i)]
-        querysets = User.objects.filter(id__in=validate_uuid).order_by('date_joined')
+        usernames = self.request.GET.getlist('username')
+        querysets = User.objects.filter(Q(id__in=validate_uuid) | Q(username__in=usernames)).order_by('date_joined')
         [setattr(item, 'uid', item.id) for item in querysets]
         return querysets
 
