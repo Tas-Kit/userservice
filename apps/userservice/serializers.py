@@ -1,17 +1,36 @@
-import re
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
+from rest_framework.validators import UniqueValidator
 from django.contrib.auth import authenticate
 from django.utils.translation import ugettext as _
+from datetime import datetime
+from datetime import timedelta
+from .models import VerifyCode
+import re
+from userservice.utils import verify_code
 
 
 User = get_user_model()
 
 
+def validate_password(password):
+    '''
+    verify password must have num and alphabet
+
+    '''
+    if not re.findall('[a-zA-Z]+', password):
+        return False
+
+    if not re.findall('[0-9]+', password):
+        print('num')
+        return False
+
+    return True
+
+
 class UserDetailSerializer(serializers.ModelSerializer):
     """
-    用户详情序列化类
+    user serializer
     """
     class Meta:
         model = User
@@ -19,28 +38,58 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(label='用户名', help_text='用户名', required=False, allow_blank=True, validators=[
-                                     UniqueValidator(queryset=User.objects.all(), message="用户已经存在")])
-    email = serializers.EmailField(label='邮箱', help_text='邮箱', required=False, allow_blank=True, validators=[
-                                   UniqueValidator(queryset=User.objects.all(), message="邮箱已注册")])
-    password = serializers.CharField(label='密码', help_text='密码', allow_blank=True, required=False)
+    username = serializers.CharField(label='user name', help_text='user name', required=False, allow_blank=True, validators=[
+                                     UniqueValidator(queryset=User.objects.all(), message="That username is already exists")],
+                                     )
+    email = serializers.EmailField(label='email', help_text='email', required=False, allow_blank=True, validators=[
+                                   UniqueValidator(queryset=User.objects.all(), message="That email is already exists")],
+                                   )
+    password = serializers.CharField(label='password', help_text='password', allow_blank=True, required=False, min_length=8,
+                                     error_messages={
+                                         'min_length': 'Password length must not be less than 8 characters'
+                                     })
 
     class Meta:
         model = User
         fields = ("username", 'password', 'first_name', 'last_name', "gender",
                   "birthday", "email", "phone", 'area_code', 'address')
 
+    def validate_password(self, password):
+        if not validate_password(password):
+            raise serializers.ValidationError('password must include Numbers and letters')
+        return password
+
 
 class UserRegSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(label="用户名", help_text="用户名", required=True,
-                                     validators=[UniqueValidator(queryset=User.objects.all(), message="用户已经存在")])
+    username = serializers.CharField(label="username", help_text="username", required=True,
+                                     validators=[
+                                         UniqueValidator(queryset=User.objects.all(),
+                                                         message="That username is already exists")],
+                                     error_messages={
+                                         "blank": "Please enter the username",
+                                         "required": "Please enter the username",
+                                     })
 
     password = serializers.CharField(
-        help_text="密码", label="密码", write_only=True, required=True,
+        help_text="password", label="password", write_only=True, required=True, min_length=8,
+        error_messages={
+            'blank': 'Please enter the password',
+            'required': 'Please enter the password',
+            'min_length': 'Password length must not be less than 8 characters'
+        }
     )
 
-    email = serializers.EmailField(label='邮箱', help_text='邮箱', validators=[
-                                   UniqueValidator(queryset=User.objects.all(), message="邮箱已注册")])
+    email = serializers.EmailField(label='email', help_text='email', validators=[
+                                   UniqueValidator(queryset=User.objects.all(), message="That email is already exists")],
+                                   error_messages={
+                                   'blank': 'Please enter the email',
+                                   'required': 'Please enter the email'
+                                   })
+
+    def validate_password(self, password):
+        if not validate_password(password):
+            raise serializers.ValidationError('password must include Numbers and letters')
+        return password
 
     def create(self, validated_data):
         user = super(UserRegSerializer, self).create(validated_data=validated_data)
@@ -55,8 +104,8 @@ class UserRegSerializer(serializers.ModelSerializer):
 
 
 class UserLoginSerializer(serializers.Serializer):
-    username = serializers.CharField(label="用户名或邮箱", help_text="用户名或邮箱", required=True, allow_blank=False)
-    password = serializers.CharField(help_text="密码", label="密码", write_only=True)
+    username = serializers.CharField(label="username or email", help_text="username or email", required=True, allow_blank=False)
+    password = serializers.CharField(help_text="password", label="password", write_only=True)
 
     def validate(self, attrs):
         credentials = {
@@ -65,9 +114,7 @@ class UserLoginSerializer(serializers.Serializer):
         }
 
         if all(credentials.values()):
-            # print(credentials)
-            user = authenticate(**credentials)  # 官方验证
-            # print(user)
+            user = authenticate(**credentials)
             self.context.get('request').user = user
 
             if user:
@@ -77,7 +124,7 @@ class UserLoginSerializer(serializers.Serializer):
 
                 return {'username': credentials.get('username')}
             else:
-                msg = _('账号或密码错误')
+                msg = _('username/email or password error')
                 raise serializers.ValidationError(msg)
         else:
             msg = _('Must include "{username_field}" and "password".')
@@ -86,7 +133,54 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 class UsersSerializers(serializers.ModelSerializer):
+
+    uid = serializers.UUIDField(format='hex_verbose')
+
     class Meta:
+        setattr(User, 'uid', User.id)
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name',
-                  'email', 'birthday', 'gender', 'phone', 'address')
+        fields = ('uid', 'username', 'first_name', 'last_name',
+                  'birthday', 'gender', 'phone', 'address')
+
+
+class ResetPasswordSerializers(serializers.Serializer):
+    email = serializers.EmailField(label='email', help_text='email')
+
+    def validate_email(self, email):
+        '''
+        validate email existes
+        '''
+        try:
+            User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Email doesn't exist")
+        else:
+            return email
+
+
+class SetPasswordSerializers(serializers.Serializer):
+    code = serializers.CharField(label='code', max_length=6)
+    email = serializers.CharField(label='email', max_length=100)
+    password = serializers.CharField(help_text="password", label="password", write_only=True, min_length=8, required=True,
+                                     error_messages={
+                                         'required': 'Please enter the username',
+                                         'min_length': 'Password length must not be less than 8 characters'
+                                     })
+
+    def validate_password(self, password):
+        if not validate_password(password):
+            raise serializers.ValidationError('password must include Numbers and letters.')
+        return password
+
+    def validate(self, attrs):
+        try:
+            user = User.objects.get(email=attrs['email'])
+        except User.DoesNotExist:
+            raise serializers.ValidationError('Unable to find user with given Email.')
+        if verify_code(attrs['email'], attrs['code']):
+            password = attrs['password']
+            user.set_password(password)
+            user.save()
+            return attrs
+        else:
+            raise serializers.ValidationError('Invalid verification code.')
