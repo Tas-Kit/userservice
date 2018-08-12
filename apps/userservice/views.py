@@ -88,6 +88,8 @@ class UserInfo(APIView):
     def get(self, request, *arg, **kwargs):
         data = self.request.user
         serializer = UserDetailSerializer(data)
+        serializer.data['uid'] = serializer.data['id']
+        del serializer.data['id']
         return Response(serializer.data)
 
     def post(self, request, *arg, **kwargs):
