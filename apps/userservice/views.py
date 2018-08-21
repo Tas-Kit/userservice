@@ -1,5 +1,6 @@
 from rest_framework import mixins
 from rest_framework import viewsets
+from copy import deepcopy
 from .serializers import (UserRegSerializer, UserDetailSerializer, UserLoginSerializer, UserUpdateSerializer,
                           UsersSerializers, ResetPasswordSerializers, SetPasswordSerializers
                           )
@@ -86,7 +87,10 @@ class UserInfo(APIView):
     def get(self, request, *arg, **kwargs):
         data = self.request.user
         serializer = UserDetailSerializer(data)
-        return Response(serializer.data)
+        userinfo = deepcopy(serializer.data)
+        userinfo['uid'] = userinfo['id']
+        del userinfo['id']
+        return Response(userinfo)
 
     def post(self, request, *arg, **kwargs):
         user = self.request.user
