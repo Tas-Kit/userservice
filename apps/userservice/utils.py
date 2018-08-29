@@ -1,6 +1,10 @@
 import time
 import hashlib
+from utils.s3 import upload
 from django.conf import settings
+from io import BytesIO
+from PIL import Image
+from rest_framework.exceptions import ParseError
 
 
 def get_code(email, t=None):
@@ -18,3 +22,23 @@ def verify_code(email, code):
     prev = get_code(email, t - 1)
     curr = get_code(email, t)
     return code == prev or code == curr
+
+
+def process_image(image):
+    try:
+        img = Image.open(image)
+        img.verify()
+    except Exception as e:
+        raise ParseError("Unable to upload image: " + str(e))
+
+    img = Image.open(image)
+    rgb_im = img.convert('RGB')
+    out_image = BytesIO()
+    rgb_im.save(out_image, format="jpeg")
+    out_image.seek(0)
+    return out_image
+
+
+def upload_user_profile(user, image):
+    image = process_image(image)
+    upload('user/{0}/profile.jpg'.format(user.id), image)

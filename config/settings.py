@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 import datetime
 import os
 import sys
+import boto3
+from botocore.client import Config
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # import pymysql
@@ -34,6 +37,19 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'dvrp^s%l(p^c6b*w=$1v5plg780f(hdif8qc&t=ic&
 DEBUG = os.getenv('DEBUG', True)
 
 ALLOWED_HOSTS = ['*']
+
+
+ACCESS_KEY_ID = os.getenv('ACCESS_KEY_ID', '')
+ACCESS_SECRET_KEY = os.getenv('ACCESS_SECRET_KEY', '')
+BUCKET_NAME = os.getenv('BUCKET_NAME', 'taskit-storage')
+BUCKET_ROOT = os.getenv('BUCKET_ROOT', 'sandbox')
+
+S3 = boto3.resource(
+    's3',
+    aws_access_key_id=ACCESS_KEY_ID,
+    aws_secret_access_key=ACCESS_SECRET_KEY,
+    config=Config(signature_version='s3v4')
+)
 
 
 # Application definition

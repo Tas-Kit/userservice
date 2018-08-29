@@ -20,6 +20,9 @@ from django.template.loader import get_template
 from rest_framework_jwt.settings import api_settings
 from userservice.utils import get_code
 import validators
+from rest_framework.parsers import FileUploadParser
+from rest_framework.exceptions import ParseError, APIException
+from .utils import upload_user_profile
 
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
@@ -48,6 +51,8 @@ def get_token(user):
 class CookieAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
+        if 'HTTP_COOKIE' not in request._request.META:
+            raise APIException('Unable to find HTTP_COOKIE', 400)
         cookies = request._request.META['HTTP_COOKIE']
         cookies = cookies.replace(' ', '').split(';')
         for cookie in cookies:
@@ -56,6 +61,30 @@ class CookieAuthentication(BaseAuthentication):
                 user = User.objects.get(id=uid)
                 return (user, None)
         return None
+
+
+class ImageUploadParser(FileUploadParser):
+    media_type = 'image/*'
+
+
+class UploadProfile(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (CookieAuthentication,)
+    parser_class = (ImageUploadParser,)
+
+    def post(self, request, format=None):
+        print(request.data)
+        if 'file' not in request.data:
+            raise ParseError("Empty content")
+
+        user = self.request.user
+        f = request.data['file']
+        try:
+            upload_user_profile(user, f)
+        except Exception as e:
+            raise ParseError("Unable to upload image: " + str(e))
+
+        return Response(status=status.HTTP_201_CREATED)
 
 
 class UserInfo(APIView):
