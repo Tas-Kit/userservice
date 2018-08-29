@@ -52,7 +52,7 @@ class CookieAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
         if 'HTTP_COOKIE' not in request._request.META:
-            raise APIException('Unable to find HTTP_COOKIE', 400)
+            return None
         cookies = request._request.META['HTTP_COOKIE']
         cookies = cookies.replace(' ', '').split(';')
         for cookie in cookies:
