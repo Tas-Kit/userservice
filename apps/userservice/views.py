@@ -73,7 +73,6 @@ class UploadProfile(APIView):
     parser_class = (ImageUploadParser,)
 
     def post(self, request, format=None):
-        print(request.data)
         if 'file' not in request.data:
             raise ParseError("Empty content")
 
