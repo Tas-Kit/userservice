@@ -24,3 +24,5 @@ djangorestframework-jwt
 cryptography
 boto3
 Pillow
+mock
+coverage

@@ -3,8 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth import authenticate
 from django.utils.translation import ugettext as _
-from .utils import process_image
-from utils.s3 import upload
+from .utils import process_image, upload
 import uuid
 import re
 from userservice.utils import verify_code
@@ -18,14 +17,9 @@ def validate_password(password):
     verify password must have num and alphabet
 
     """
-    if not re.findall('[a-zA-Z]+', password):
-        return False
-
-    if not re.findall('[0-9]+', password):
-        print('num')
-        return False
-
-    return True
+    if not re.findall('[a-zA-Z]+', password) or not re.findall('[0-9]+', password):
+        raise serializers.ValidationError('password must include Numbers and letters', code=411)
+    return password
 
 
 class UserDetailSerializer(serializers.ModelSerializer):
@@ -56,9 +50,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                   "birthday", "email", "phone", 'area_code', 'address')
 
     def validate_password(self, password):
-        if not validate_password(password):
-            raise serializers.ValidationError('password must include Numbers and letters')
-        return password
+        return validate_password(password)
 
 
 class UserRegSerializer(serializers.ModelSerializer):
@@ -88,9 +80,7 @@ class UserRegSerializer(serializers.ModelSerializer):
                                    })
 
     def validate_password(self, password):
-        if not validate_password(password):
-            raise serializers.ValidationError('password must include Numbers and letters')
-        return password
+        return validate_password(password)
 
     def create(self, validated_data):
         user = super(UserRegSerializer, self).create(validated_data=validated_data)
@@ -148,17 +138,19 @@ class ImageUploadSerializer(serializers.Serializer):
     def validate_path(self, path):
         path = path.split('/')
         temp_item = self.valid_file_path
+        new_path = []
         for item in path:
             if item is not None and item != '':
                 if item in temp_item:
                     temp_item = temp_item[item]
+                    new_path.append(item)
                 else:
                     temp_item = False
                     break
-        path = '/'.join(path)
+        new_path = '/'.join(new_path)
         if temp_item is not True:
-            raise serializers.ValidationError('Incorrect upload file path: {0}'.format(path), code=410)
-        return path
+            raise serializers.ValidationError('Incorrect upload file path: {0}'.format(new_path), code=410)
+        return new_path
 
     def validate_image(self, image):
         return process_image(image)
@@ -169,28 +161,23 @@ class UserLoginSerializer(serializers.Serializer):
     password = serializers.CharField(help_text="password", label="password", write_only=True)
 
     def validate(self, attrs):
-        credentials = {
-            'username': attrs.get('username'),
-            'password': attrs.get('password')
-        }
-
-        if all(credentials.values()):
-            user = authenticate(**credentials)
+        if all(attrs.values()):
+            user = authenticate(**attrs)
             self.context.get('request').user = user
 
             if user:
                 if not user.is_active:
                     msg = _('User account is disabled.')
-                    raise serializers.ValidationError(msg)
+                    raise serializers.ValidationError(msg, code=411)
 
-                return {'username': credentials.get('username')}
+                return {'username': attrs.get('username')}
             else:
                 msg = _('username/email or password error')
-                raise serializers.ValidationError(msg)
+                raise serializers.ValidationError(msg, code=412)
         else:
             msg = _('Must include "{username_field}" and "password".')
             msg = msg.format(username_field=self.username_field)
-            raise serializers.ValidationError(msg)
+            raise serializers.ValidationError(msg, code=413)
 
 
 class UsersSerializers(serializers.ModelSerializer):
@@ -229,9 +216,7 @@ class SetPasswordSerializers(serializers.Serializer):
                                      })
 
     def validate_password(self, password):
-        if not validate_password(password):
-            raise serializers.ValidationError('password must include Numbers and letters.')
-        return password
+        return validate_password(password)
 
     def validate(self, attrs):
         try:
