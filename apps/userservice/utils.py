@@ -25,17 +25,22 @@ def verify_code(email, code):
 
 
 def process_image(image):
+    if image is None:
+        raise ParseError("Empty content")
     try:
         img = Image.open(image)
         img.verify()
     except Exception as e:
-        raise ParseError("Unable to upload image: " + str(e))
+        raise ParseError("Unable to upload image: {0}".format(e))
 
-    img = Image.open(image)
-    rgb_im = img.convert('RGB')
-    out_image = BytesIO()
-    rgb_im.save(out_image, format="jpeg")
-    out_image.seek(0)
+    try:
+        img = Image.open(image)
+        rgb_im = img.convert('RGB')
+        out_image = BytesIO()
+        rgb_im.save(out_image, format="jpeg")
+        out_image.seek(0)
+    except Exception as e:
+        raise ParseError("Unable to process image: {0}".format(e), code=411)
     return out_image
 
 

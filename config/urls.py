@@ -22,7 +22,8 @@ from userservice.views import (
     UsersViewSet,
     ResetPassword,
     SetPassword,
-    UploadProfile
+    UploadProfile,
+    UploadImage
 )
 from rest_framework import routers
 from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
@@ -37,6 +38,7 @@ api_v1_userservice_url = [
     path('exempt/reset_password/', ResetPassword.as_view()),
     path('exempt/set_password/', SetPassword.as_view()),
     path('userinfo/', UserInfo.as_view()),
+    path('upload_image/', UploadImage.as_view()),
     path('upload_profile/', UploadProfile.as_view()),
     path('users/', include(router.urls)),
     path('exempt/get_jwt/', obtain_jwt_token),

@@ -1,8 +1,15 @@
 from rest_framework import mixins
 from rest_framework import viewsets
 from copy import deepcopy
-from .serializers import (UserRegSerializer, UserDetailSerializer, UserLoginSerializer, UserUpdateSerializer,
-                          UsersSerializers, ResetPasswordSerializers, SetPasswordSerializers
+from .serializers import (UserRegSerializer,
+                          UserDetailSerializer,
+                          UserLoginSerializer,
+                          UserUpdateSerializer,
+                          UsersSerializers,
+                          ResetPasswordSerializers,
+                          SetPasswordSerializers,
+                          ImageUploadSerializer,
+                          ProfileUploadSerializer
                           )
 from django.contrib.auth import get_user_model
 from rest_framework import permissions
@@ -21,8 +28,7 @@ from rest_framework_jwt.settings import api_settings
 from userservice.utils import get_code
 import validators
 from rest_framework.parsers import FileUploadParser
-from rest_framework.exceptions import ParseError, APIException
-from .utils import upload_user_profile
+
 
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
@@ -67,30 +73,63 @@ class ImageUploadParser(FileUploadParser):
     media_type = 'image/*'
 
 
+class UploadImage(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    authentication_classes = (CookieAuthentication,)
+    parser_class = (ImageUploadParser,)
+
+    def get_serializer(self, *args, **kwargs):
+        """
+        Return the serializer instance that should be used for validating and
+        deserializing input, and for serializing output.
+        """
+        serializer_class = ImageUploadSerializer
+        return serializer_class(*args, **kwargs)
+
+    def post(self, request, format=None):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = serializer.save()
+        return Response(result, status=status.HTTP_201_CREATED)
+
+
 class UploadProfile(APIView):
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (CookieAuthentication,)
     parser_class = (ImageUploadParser,)
 
+    def get_serializer(self, *args, **kwargs):
+        """
+        Return the serializer instance that should be used for validating and
+        deserializing input, and for serializing output.
+        """
+        serializer_class = ProfileUploadSerializer
+        kwargs['context'] = {
+            'request': self.request
+        }
+        return serializer_class(*args, **kwargs)
+
+    def get_serializer_context(self):
+        """
+        Extra context provided to the serializer class.
+        """
+        return {
+            'request': self.request
+        }
+
     def post(self, request, format=None):
-        if 'file' not in request.data:
-            raise ParseError("Empty content")
-
-        user = self.request.user
-        f = request.data['file']
-        try:
-            upload_user_profile(user, f)
-        except Exception as e:
-            raise ParseError("Unable to upload image: " + str(e))
-
-        return Response(status=status.HTTP_201_CREATED)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        result = serializer.save()
+        return Response(result, status=status.HTTP_201_CREATED)
 
 
 class UserInfo(APIView):
-    '''
+    """
     list get personal info
     create modify personal info
-    '''
+    """
+
     permission_classes = (permissions.IsAuthenticated,)
     authentication_classes = (CookieAuthentication,)
 
@@ -137,9 +176,10 @@ class UserInfo(APIView):
 
 
 class UserSignUp(APIView):
-    '''
+    """
     User sign up
-    '''
+    """
+
     permission_classes = ()
     authentication_classes = ()
 
@@ -148,7 +188,6 @@ class UserSignUp(APIView):
         Return the serializer instance that should be used for validating and
         deserializing input, and for serializing output.
         """
-
         serializer_class = UserRegSerializer
 
         return serializer_class(*args, **kwargs)
@@ -166,19 +205,18 @@ class UserSignUp(APIView):
 
 
 class UserLogin(APIView):
-    '''
+    """
     user login
-    '''
+    """
+
     permission_classes = ()
     authentication_classes = ()
-    # serializer_class = UserLoginSerializer
 
     def get_serializer(self, *args, **kwargs):
         """
         Return the serializer instance that should be used for validating and
         deserializing input, and for serializing output.
         """
-
         serializer_class = UserLoginSerializer
         kwargs['context'] = {'request': self.request}
 
@@ -195,9 +233,10 @@ class UserLogin(APIView):
 
 
 class UsersPage(PageNumberPagination):
-    '''
+    """
     paging
-    '''
+    """
+
     page_size = 20
     page_size_query_param = 'page_size'
     page_query_param = "page"
@@ -208,14 +247,11 @@ class UsersViewSet(
         mixins.ListModelMixin,
         mixins.RetrieveModelMixin,
         viewsets.GenericViewSet):
-    '''
+    """
     Users lookup
-    '''
-    # lookup_field = 'uid'
+    """
 
     serializer_class = UsersSerializers
-    # queryset = User.objects.all()
-    # authentication_classes = ()
     pagination_class = UsersPage
 
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
@@ -233,9 +269,10 @@ class UsersViewSet(
 
 
 class ResetPassword(APIView):
-    '''
+    """
     reset password get code
-    '''
+    """
+
     permission_classes = ()
     authentication_classes = ()
 
@@ -270,9 +307,10 @@ class ResetPassword(APIView):
 
 
 class SetPassword(APIView):
-    '''
+    """
     Reset password
-    '''
+    """
+
     permission_classes = ()
     authentication_classes = ()
 
