@@ -1,5 +1,3 @@
-from rest_framework import mixins
-from rest_framework import viewsets
 from copy import deepcopy
 from .serializers import (UserRegSerializer,
                           UserDetailSerializer,
@@ -12,11 +10,9 @@ from .serializers import (UserRegSerializer,
                           ProfileUploadSerializer
                           )
 from django.contrib.auth import get_user_model
-from rest_framework import permissions
-from rest_framework import status
+from rest_framework import permissions, status, filters, mixins, viewsets
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.views import APIView
 from django.contrib.auth.backends import ModelBackend
@@ -28,11 +24,13 @@ from rest_framework_jwt.settings import api_settings
 from userservice.utils import get_code
 import validators
 from rest_framework.parsers import FileUploadParser
+from .services import PLATFORM
 
 
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 User = get_user_model()
+platform = PLATFORM()
 
 
 class CustomBackend(ModelBackend):
@@ -226,7 +224,8 @@ class UserLogin(APIView):
         serializer = self.get_serializer(data=request.data)
 
         if serializer.is_valid(raise_exception=True):
-            response = Response('SUCCESS')
+            platform_root_key = platform.get_platform_root_key(request.user.id)
+            response = Response(platform_root_key)
             response.set_cookie(api_settings.JWT_AUTH_COOKIE, get_token(request.user))
             return response
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
